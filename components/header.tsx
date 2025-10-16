@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { BarChart3 } from "lucide-react"
 import { StockSearch } from "@/components/stock-search"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function Header() {
   return (
@@ -23,6 +24,7 @@ export function Header() {
             <Link href="/stocks" className="text-sm font-medium hover:text-primary transition-colors">
               All Stocks
             </Link>
+            <ThemeToggle />
           </nav>
         </div>
 

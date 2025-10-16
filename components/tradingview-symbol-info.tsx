@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { useTheme } from "next-themes"
 
 interface TradingViewSymbolInfoProps {
   symbol: string
@@ -8,6 +9,7 @@ interface TradingViewSymbolInfoProps {
 
 export function TradingViewSymbolInfo({ symbol }: TradingViewSymbolInfoProps) {
   const container = useRef<HTMLDivElement>(null)
+  const { theme } = useTheme()
 
   useEffect(() => {
     if (!container.current) return
@@ -23,7 +25,7 @@ export function TradingViewSymbolInfo({ symbol }: TradingViewSymbolInfoProps) {
       symbol: symbol,
       width: "100%",
       locale: "en",
-      colorTheme: "dark",
+      colorTheme: theme === "light" ? "light" : "dark",
       isTransparent: true,
     })
 
@@ -34,7 +36,7 @@ export function TradingViewSymbolInfo({ symbol }: TradingViewSymbolInfoProps) {
         container.current.innerHTML = ""
       }
     }
-  }, [symbol])
+  }, [symbol, theme])
 
   return (
     <div className="tradingview-widget-container" ref={container}>
