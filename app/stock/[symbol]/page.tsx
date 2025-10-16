@@ -1,11 +1,12 @@
-import { getCompanyProfile, getStocksBySymbols, getHistoricalPrices } from "@/lib/fmp-api"
+import { getCompanyProfile, getStocksBySymbols } from "@/lib/fmp-api"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { StockChart } from "@/components/stock-chart"
+import { TradingViewSymbolInfo } from "@/components/tradingview-symbol-info"
+import { ExpandableChart } from "@/components/expandable-chart"
 import { SECTOR_STOCKS } from "@/lib/sector-stocks"
 
 interface StockPageProps {
@@ -19,11 +20,7 @@ export default async function StockPage({ params }: StockPageProps) {
   const upperSymbol = symbol.toUpperCase()
 
   // Fetch stock data in parallel
-  const [quotes, profile, historicalData] = await Promise.all([
-    getStocksBySymbols([upperSymbol]),
-    getCompanyProfile(upperSymbol),
-    getHistoricalPrices(upperSymbol),
-  ])
+  const [quotes, profile] = await Promise.all([getStocksBySymbols([upperSymbol]), getCompanyProfile(upperSymbol)])
 
   const stock = quotes[0]
 
@@ -33,9 +30,6 @@ export default async function StockPage({ params }: StockPageProps) {
 
   // Find sector
   const sector = Object.entries(SECTOR_STOCKS).find(([_, symbols]) => symbols.includes(upperSymbol))?.[0] || "Unknown"
-
-  // Get last 90 days of data
-  const chartData = historicalData.slice(0, 90).reverse()
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,141 +80,115 @@ export default async function StockPage({ params }: StockPageProps) {
             </div>
           </div>
 
-          {/* Price Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Price History (90 Days)</CardTitle>
-              <CardDescription>Historical closing prices and trading volume</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <StockChart data={chartData} />
-            </CardContent>
-          </Card>
-
-          {/* Key Metrics Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+          <div className="flex flex-col gap-6" style={{ minHeight: "calc(100vh - 300px)" }}>
+            {/* Key Metrics & Trading Information - 35% */}
+            <Card className="flex-[0_0_35%]">
               <CardHeader className="pb-3">
-                <CardDescription>Market Cap</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">${(stock.marketCap / 1e9).toFixed(2)}B</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription>P/E Ratio</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stock.pe ? stock.pe.toFixed(2) : "N/A"}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription>Volume</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{(stock.volume / 1e6).toFixed(2)}M</div>
-                <p className="text-xs text-muted-foreground mt-1">Avg: {(stock.avgVolume / 1e6).toFixed(2)}M</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription>EPS</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">${stock.eps ? stock.eps.toFixed(2) : "N/A"}</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Trading Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Trading Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Open</p>
-                  <p className="text-lg font-semibold">${stock.open.toFixed(2)}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Previous Close</p>
-                  <p className="text-lg font-semibold">${stock.previousClose.toFixed(2)}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Day Range</p>
-                  <p className="text-lg font-semibold">
-                    ${stock.dayLow.toFixed(2)} - ${stock.dayHigh.toFixed(2)}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">52 Week Range</p>
-                  <p className="text-lg font-semibold">
-                    ${stock.yearLow.toFixed(2)} - ${stock.yearHigh.toFixed(2)}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">50-Day Avg</p>
-                  <p className="text-lg font-semibold">${stock.priceAvg50.toFixed(2)}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">200-Day Avg</p>
-                  <p className="text-lg font-semibold">${stock.priceAvg200.toFixed(2)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Company Profile */}
-          {profile && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Company Profile</CardTitle>
+                <CardTitle className="text-lg">Key Metrics & Trading Info</CardTitle>
+                <CardDescription className="text-xs">Real-time data from TradingView and market data</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">CEO</p>
-                    <p className="font-medium">{profile.ceo || "N/A"}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Industry</p>
-                    <p className="font-medium">{profile.industry || "N/A"}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Employees</p>
-                    <p className="font-medium">{profile.fullTimeEmployees || "N/A"}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Website</p>
-                    {profile.website ? (
-                      <a
-                        href={profile.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {profile.website}
-                      </a>
-                    ) : (
-                      <p className="font-medium">N/A</p>
-                    )}
+                {/* TradingView Symbol Info */}
+                <div>
+                  <TradingViewSymbolInfo symbol={upperSymbol} />
+                </div>
+
+                {/* Trading Information */}
+                <div className="border-t pt-3">
+                  <h3 className="text-xs font-semibold mb-2">Trading Details</h3>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Open</p>
+                      <p className="text-sm font-semibold">${stock.open.toFixed(2)}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Previous Close</p>
+                      <p className="text-sm font-semibold">${stock.previousClose.toFixed(2)}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Day Range</p>
+                      <p className="text-sm font-semibold">
+                        ${stock.dayLow.toFixed(2)} - ${stock.dayHigh.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">52 Week Range</p>
+                      <p className="text-sm font-semibold">
+                        ${stock.yearLow.toFixed(2)} - ${stock.yearHigh.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">50-Day Avg</p>
+                      <p className="text-sm font-semibold">${stock.priceAvg50.toFixed(2)}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">200-Day Avg</p>
+                      <p className="text-sm font-semibold">${stock.priceAvg200.toFixed(2)}</p>
+                    </div>
                   </div>
                 </div>
-                {profile.description && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Description</p>
-                    <p className="text-sm leading-relaxed">{profile.description}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
-          )}
+
+            {/* Price Chart - 45% */}
+            <Card className="flex-[0_0_45%]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Price Chart</CardTitle>
+                <CardDescription className="text-xs">
+                  Interactive chart powered by TradingView - Click expand for fullscreen view
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ExpandableChart symbol={upperSymbol} stockName={stock.name} height={600} />
+              </CardContent>
+            </Card>
+
+            {/* Company Profile - 20% (moved to bottom) */}
+            {profile && (
+              <Card className="flex-[0_0_20%]">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Company Profile</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-2 sm:grid-cols-4">
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">CEO</p>
+                      <p className="text-xs font-medium truncate">{profile.ceo || "N/A"}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Industry</p>
+                      <p className="text-xs font-medium truncate">{profile.industry || "N/A"}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Employees</p>
+                      <p className="text-xs font-medium">{profile.fullTimeEmployees || "N/A"}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Website</p>
+                      {profile.website ? (
+                        <a
+                          href={profile.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium text-primary hover:underline truncate block"
+                        >
+                          Visit Site
+                        </a>
+                      ) : (
+                        <p className="text-xs font-medium">N/A</p>
+                      )}
+                    </div>
+                  </div>
+                  {profile.description && (
+                    <div className="space-y-0.5 mt-2 pt-2 border-t">
+                      <p className="text-xs text-muted-foreground">Description</p>
+                      <p className="text-xs leading-relaxed line-clamp-2">{profile.description}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </main>
     </div>

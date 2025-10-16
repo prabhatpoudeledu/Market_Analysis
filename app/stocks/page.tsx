@@ -2,6 +2,7 @@ import { SECTOR_STOCKS } from "@/lib/sector-stocks"
 import { getStocksBySymbols } from "@/lib/fmp-api"
 import { Header } from "@/components/header"
 import { StockTable } from "@/components/stock-table"
+import { StockSearch } from "@/components/stock-search"
 
 export default async function StocksPage() {
   // Get all stock symbols from all sectors
@@ -34,6 +35,10 @@ export default async function StocksPage() {
             <p className="text-lg text-muted-foreground">
               Browse and search through {stocks.length} stocks across all sectors
             </p>
+          </div>
+
+          <div className="flex justify-center">
+            <StockSearch />
           </div>
 
           {/* Stock Table */}

@@ -207,8 +207,14 @@ export async function getHistoricalPrices(symbol: string, from?: string, to?: st
       15000,
     )
 
+    if (response.status === 403) {
+      console.log("[v0] Historical data requires premium Finnhub subscription")
+      return []
+    }
+
     if (!response.ok) {
-      throw new Error("Failed to fetch historical prices")
+      console.error("[v0] Failed to fetch historical prices, status:", response.status)
+      return []
     }
 
     const data = await response.json()
@@ -354,5 +360,43 @@ export async function getCompanyProfile(symbol: string): Promise<CompanyProfile 
   } catch (error) {
     console.error("[v0] Error fetching company profile:", error)
     return null
+  }
+}
+
+export interface SymbolSearchResult {
+  description: string
+  displaySymbol: string
+  symbol: string
+  type: string
+}
+
+export async function searchSymbols(query: string): Promise<SymbolSearchResult[]> {
+  try {
+    if (!query || query.length < 1) {
+      return []
+    }
+
+    console.log("[v0] Searching symbols for:", query)
+    const response = await fetchWithTimeout(
+      `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(query)}&token=${FINNHUB_API_KEY}`,
+      { next: { revalidate: 3600 } },
+      5000,
+    )
+
+    if (!response.ok) {
+      console.error("[v0] Failed to search symbols")
+      return []
+    }
+
+    const data = await response.json()
+    console.log("[v0] Symbol search results:", data.result?.length || 0)
+
+    // Filter to only US stocks and limit results
+    return (data.result || [])
+      .filter((item: SymbolSearchResult) => item.type === "Common Stock" && !item.symbol.includes("."))
+      .slice(0, 10)
+  } catch (error) {
+    console.error("[v0] Error searching symbols:", error)
+    return []
   }
 }
