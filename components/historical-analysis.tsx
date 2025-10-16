@@ -18,7 +18,7 @@ import {
 } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
 import { TrendingUp, TrendingDown, Activity } from "lucide-react"
-import { SectorHeatMap } from "@/components/sector-heat-map"
+import { StockHeatMap } from "@/components/stock-heat-map"
 
 type TimeRange = "5D" | "10D" | "15D" | "1M" | "3M" | "6M" | "1Y" | "3Y" | "5Y" | "ALL"
 
@@ -68,6 +68,7 @@ export function HistoricalAnalysis() {
   const [loading, setLoading] = useState(false)
   const [historicalData, setHistoricalData] = useState<any[]>([])
   const [sectorData, setSectorData] = useState<any[]>([])
+  const [stockData, setStockData] = useState<any[]>([])
   const [hoveredSector, setHoveredSector] = useState<string | null>(null)
   const [stats, setStats] = useState({
     avgReturn: 0,
@@ -87,6 +88,7 @@ export function HistoricalAnalysis() {
       const mockData = generateMockHistoricalData(days)
       setHistoricalData(mockData)
       calculateStats(mockData)
+      generateMockStockData(mockData)
     } catch (error) {
       console.error("[v0] Error fetching historical data:", error)
     } finally {
@@ -135,6 +137,33 @@ export function HistoricalAnalysis() {
     return data
   }
 
+  const generateMockStockData = (data: any[]) => {
+    const sectors = Object.keys(data[0]).filter((key) => key !== "date" && key !== "fullDate" && key !== "S&P 500")
+
+    const stocks: any[] = []
+    sectors.forEach((sector) => {
+      const numStocks = 3 + Math.floor(Math.random() * 3)
+      for (let i = 0; i < numStocks; i++) {
+        const firstValue = data[0][sector]
+        const lastValue = data[data.length - 1][sector]
+        const sectorPerformance = ((lastValue - firstValue) / Math.abs(firstValue)) * 100
+
+        const variance = (Math.random() - 0.5) * 10
+        const performance = sectorPerformance + variance
+
+        stocks.push({
+          symbol: `${sector.substring(0, 3).toUpperCase()}${i + 1}`,
+          name: `${sector} Stock ${i + 1}`,
+          performance: performance,
+          price: 50 + Math.random() * 200,
+          marketCap: (10 + Math.random() * 500) * 1e9,
+        })
+      }
+    })
+
+    setStockData(stocks)
+  }
+
   const calculateStats = (data: any[]) => {
     if (data.length === 0) return
 
@@ -143,9 +172,10 @@ export function HistoricalAnalysis() {
     const returns = sectors.map((sector) => {
       const firstValue = data[0][sector]
       const lastValue = data[data.length - 1][sector]
+      const performance = ((lastValue - firstValue) / Math.abs(firstValue)) * 100
       return {
         sector,
-        performance: ((lastValue - firstValue) / Math.abs(firstValue)) * 100,
+        performance,
       }
     })
 
@@ -185,14 +215,16 @@ export function HistoricalAnalysis() {
     })
   }
 
-  const comparisonData = sectorData.map((sector, index) => ({
-    sector: SECTOR_ABBR[sector.sector] || sector.sector,
-    fullName: sector.sector,
-    performance: sector.performance,
-    sp500: stats.sp500Return,
-    difference: sector.performance - stats.sp500Return,
-    color: SECTOR_COLORS[index % SECTOR_COLORS.length],
-  }))
+  const comparisonData = sectorData
+    .map((sector, index) => ({
+      sector: SECTOR_ABBR[sector.sector] || sector.sector,
+      fullName: sector.sector,
+      performance: sector.performance,
+      sp500: stats.sp500Return,
+      difference: sector.performance - stats.sp500Return,
+      color: SECTOR_COLORS[index % SECTOR_COLORS.length],
+    }))
+    .sort((a, b) => b.performance - a.performance)
 
   return (
     <div className="space-y-6">
@@ -272,10 +304,13 @@ export function HistoricalAnalysis() {
         </Card>
       </div>
 
-      {sectorData.length > 0 && (
+      {stockData.length > 0 && (
         <div>
-          <h2 className="text-2xl font-bold mb-4">Sector Performance Heat Map</h2>
-          <SectorHeatMap sectors={sectorData} />
+          <h2 className="text-2xl font-bold mb-4">Stock Performance Heat Map</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Box size represents market cap, color intensity shows performance
+          </p>
+          <StockHeatMap stocks={stockData} />
         </div>
       )}
 
@@ -326,7 +361,7 @@ export function HistoricalAnalysis() {
                               </div>
                               <div className="flex justify-between gap-4">
                                 <span className="text-muted-foreground">S&P 500:</span>
-                                <span className="text-emerald-500">
+                                <span className={data.sp500 >= 0 ? "text-emerald-500" : "text-red-500"}>
                                   {data.sp500 >= 0 ? "+" : ""}
                                   {data.sp500.toFixed(2)}%
                                 </span>
@@ -347,8 +382,16 @@ export function HistoricalAnalysis() {
                   />
                   <Legend
                     wrapperStyle={{ paddingTop: "20px" }}
-                    onMouseEnter={(e) => setHoveredSector(e.dataKey)}
+                    onMouseEnter={(e) => {
+                      const entry = comparisonData.find((d) => d.sector === e.value || d.fullName === e.value)
+                      if (entry) setHoveredSector(entry.fullName)
+                    }}
                     onMouseLeave={() => setHoveredSector(null)}
+                    formatter={(value, entry: any) => {
+                      if (value === "performance") return "Sector Performance"
+                      if (value === "sp500") return "S&P 500"
+                      return value
+                    }}
                   />
                   <Bar dataKey="performance" name="Sector Performance" radius={[4, 4, 0, 0]}>
                     {comparisonData.map((entry, index) => (
@@ -359,7 +402,13 @@ export function HistoricalAnalysis() {
                       />
                     ))}
                   </Bar>
-                  <Bar dataKey="sp500" name="S&P 500" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="sp500"
+                    name="S&P 500"
+                    fill="hsl(142, 71%, 45%)"
+                    radius={[4, 4, 0, 0]}
+                    opacity={hoveredSector === null ? 1 : 0.3}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -367,7 +416,6 @@ export function HistoricalAnalysis() {
         </CardContent>
       </Card>
 
-      {/* Historical trend line chart */}
       <Card>
         <CardHeader>
           <CardTitle>Sector Performance Trends</CardTitle>
