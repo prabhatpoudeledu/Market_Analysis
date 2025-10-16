@@ -24,6 +24,9 @@ export function Header() {
             <Link href="/stocks" className="text-sm font-medium hover:text-primary transition-colors">
               All Stocks
             </Link>
+            <Link href="/historical" className="text-sm font-medium hover:text-primary transition-colors">
+              Historical
+            </Link>
             <ThemeToggle />
           </nav>
         </div>

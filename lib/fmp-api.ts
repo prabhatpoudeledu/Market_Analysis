@@ -257,6 +257,53 @@ export async function getHistoricalPrices(symbol: string, from?: string, to?: st
   }
 }
 
+export async function getHistoricalSectorPerformance(days = 90): Promise<Record<string, HistoricalPrice[]>> {
+  try {
+    console.log("[v0] Getting historical sector performance for", days, "days")
+
+    const sectorETFs = [
+      { symbol: "XLK", sector: "Technology" },
+      { symbol: "XLF", sector: "Financial Services" },
+      { symbol: "XLV", sector: "Healthcare" },
+      { symbol: "XLE", sector: "Energy" },
+      { symbol: "XLY", sector: "Consumer Cyclical" },
+      { symbol: "XLP", sector: "Consumer Defensive" },
+      { symbol: "XLI", sector: "Industrials" },
+      { symbol: "XLB", sector: "Basic Materials" },
+      { symbol: "XLRE", sector: "Real Estate" },
+      { symbol: "XLU", sector: "Utilities" },
+      { symbol: "XLC", sector: "Communication Services" },
+    ]
+
+    const toDate = new Date()
+    const fromDate = new Date(toDate.getTime() - days * 24 * 60 * 60 * 1000)
+
+    const historicalData: Record<string, HistoricalPrice[]> = {}
+
+    await Promise.all(
+      sectorETFs.map(async ({ symbol, sector }) => {
+        try {
+          const data = await getHistoricalPrices(
+            symbol,
+            fromDate.toISOString().split("T")[0],
+            toDate.toISOString().split("T")[0],
+          )
+          historicalData[sector] = data
+        } catch (error) {
+          console.error("[v0] Error fetching historical data for sector:", sector, error)
+          historicalData[sector] = []
+        }
+      }),
+    )
+
+    console.log("[v0] Historical sector data received for", Object.keys(historicalData).length, "sectors")
+    return historicalData
+  } catch (error) {
+    console.error("[v0] Error fetching historical sector performance:", error)
+    return {}
+  }
+}
+
 export interface CompanyProfile {
   symbol: string
   price: number
