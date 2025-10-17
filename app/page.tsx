@@ -2,10 +2,10 @@ import { Suspense } from "react"
 import { getSectorPerformance } from "@/lib/fmp-api"
 import { normalizeSectorName } from "@/lib/sector-stocks"
 import { SectorHeatMap } from "@/components/sector-heat-map"
-import { MarketOverview } from "@/components/market-overview"
+import { FinvizMap } from "@/components/finviz-map"
+import { MarketIndices } from "@/components/market-indices"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card } from "@/components/ui/card"
 
 async function MarketData() {
   console.log("[v0] MarketData component rendering, fetching sector data...")
@@ -30,25 +30,25 @@ async function MarketData() {
       }
     })
 
-  // Calculate S&P 500 average (weighted average of all sectors)
-  const spPerformance = sectors.length > 0 ? sectors.reduce((sum, s) => sum + s.performance, 0) / sectors.length : 0
-
-  console.log("[v0] Processed sectors:", sectors.length, "S&P Performance:", spPerformance)
+  console.log("[v0] Processed sectors:", sectors.length)
 
   return (
     <>
-      {/* Sector Heat Map */}
+      {/* Market Indices */}
+      <section>
+        <MarketIndices />
+      </section>
+
       <section>
         <div className="mb-4">
           <h2 className="text-2xl font-bold mb-2">Sector Performance</h2>
-          <p className="text-muted-foreground">Click on any sector to view detailed stock performance</p>
+          <p className="text-muted-foreground">Click on a sector to view detailed stock performance</p>
         </div>
         <SectorHeatMap sectors={sectors} />
       </section>
 
-      {/* Market Overview */}
-      <section>
-        <MarketOverview sectors={sectors} spPerformance={spPerformance} />
+      <section className="mt-8">
+        <FinvizMap />
       </section>
     </>
   )
@@ -58,29 +58,23 @@ function MarketDataSkeleton() {
   return (
     <>
       <section>
+        <MarketIndices />
+      </section>
+
+      <section>
         <div className="mb-4">
           <h2 className="text-2xl font-bold mb-2">Sector Performance</h2>
+          <p className="text-muted-foreground">Loading sector data...</p>
+        </div>
+        <Skeleton className="w-full h-[400px] rounded-lg" />
+      </section>
+
+      <section className="mt-8">
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold mb-2">Market Map</h2>
           <p className="text-muted-foreground">Loading market data...</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <Card key={i} className="p-6">
-              <Skeleton className="h-6 w-24 mb-2" />
-              <Skeleton className="h-8 w-16" />
-            </Card>
-          ))}
-        </div>
-      </section>
-      <section className="mt-8">
-        <Skeleton className="h-8 w-48 mb-4" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="p-6">
-              <Skeleton className="h-4 w-24 mb-4" />
-              <Skeleton className="h-8 w-16" />
-            </Card>
-          ))}
-        </div>
+        <Skeleton className="w-full h-[600px] rounded-lg" />
       </section>
     </>
   )

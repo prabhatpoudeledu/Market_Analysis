@@ -81,8 +81,8 @@ export default async function StockPage({ params }: StockPageProps) {
           </div>
 
           <div className="flex flex-col gap-6" style={{ minHeight: "calc(100vh - 300px)" }}>
-            {/* Key Metrics & Trading Information - 35% */}
-            <Card className="flex-[0_0_35%]">
+            {/* Key Metrics & Trading Information - 30% */}
+            <Card className="flex-[0_0_30%]">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Key Metrics & Trading Info</CardTitle>
                 <CardDescription className="text-xs">Real-time data from TradingView and market data</CardDescription>
@@ -130,8 +130,8 @@ export default async function StockPage({ params }: StockPageProps) {
               </CardContent>
             </Card>
 
-            {/* Price Chart - 45% */}
-            <Card className="flex-[0_0_45%]">
+            {/* Price Chart - 50% */}
+            <Card className="flex-[0_0_50%]">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">Price Chart</CardTitle>
                 <CardDescription className="text-xs">
@@ -139,7 +139,7 @@ export default async function StockPage({ params }: StockPageProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ExpandableChart symbol={upperSymbol} stockName={stock.name} height={600} />
+                <ExpandableChart symbol={upperSymbol} stockName={stock.name} height={900} />
               </CardContent>
             </Card>
 

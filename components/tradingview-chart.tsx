@@ -23,18 +23,28 @@ export function TradingViewChart({ symbol, height = 700 }: TradingViewChartProps
     script.type = "text/javascript"
     script.async = true
     script.innerHTML = JSON.stringify({
-      autosize: true,
+      autosize: false,
+      width: "100%",
+      height: height,
       symbol: symbol,
       interval: "D",
       timezone: "Etc/UTC",
       theme: theme === "light" ? "light" : "dark",
       style: "1",
       locale: "en",
-      backgroundColor: "rgba(0, 0, 0, 0)",
+      backgroundColor: theme === "light" ? "rgba(255, 255, 255, 1)" : "rgba(19, 23, 34, 1)",
       gridColor: theme === "light" ? "rgba(0, 0, 0, 0.06)" : "rgba(255, 255, 255, 0.06)",
+      enable_publishing: false,
       allow_symbol_change: true,
+      details: true,
+      hotlist: true,
       calendar: false,
+      studies: ["STD;SMA"],
+      show_popup_button: true,
+      popup_width: "1000",
+      popup_height: "650",
       support_host: "https://www.tradingview.com",
+      container_id: "tradingview_chart",
     })
 
     container.current.appendChild(script)
@@ -44,13 +54,14 @@ export function TradingViewChart({ symbol, height = 700 }: TradingViewChartProps
         container.current.innerHTML = ""
       }
     }
-  }, [symbol, theme])
+  }, [symbol, theme, height])
 
   return (
     <div className="tradingview-widget-container" ref={container} style={{ height: `${height}px`, width: "100%" }}>
       <div
+        id="tradingview_chart"
         className="tradingview-widget-container__widget"
-        style={{ height: "calc(100% - 32px)", width: "100%" }}
+        style={{ height: "100%", width: "100%" }}
       ></div>
     </div>
   )

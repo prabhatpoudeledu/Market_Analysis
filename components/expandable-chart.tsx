@@ -9,9 +9,10 @@ import { Maximize2, Minimize2 } from "lucide-react"
 interface ExpandableChartProps {
   symbol: string
   stockName: string
+  height?: number
 }
 
-export function ExpandableChart({ symbol, stockName }: ExpandableChartProps) {
+export function ExpandableChart({ symbol, stockName, height = 800 }: ExpandableChartProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
@@ -29,7 +30,7 @@ export function ExpandableChart({ symbol, stockName }: ExpandableChartProps) {
             Expand Chart
           </Button>
         </div>
-        <TradingViewChart symbol={symbol} height={800} />
+        <TradingViewChart symbol={symbol} height={height} />
       </div>
 
       {/* Fullscreen Dialog */}
@@ -47,7 +48,7 @@ export function ExpandableChart({ symbol, stockName }: ExpandableChartProps) {
             </div>
           </DialogHeader>
           <div className="flex-1 mt-4">
-            <TradingViewChart symbol={symbol} height={window.innerHeight - 150} />
+            <TradingViewChart symbol={symbol} height={typeof window !== "undefined" ? window.innerHeight - 150 : 800} />
           </div>
         </DialogContent>
       </Dialog>
