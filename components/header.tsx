@@ -21,12 +21,15 @@ export function Header() {
             <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
               Sectors
             </Link>
+            <Link href="/world-indices" className="text-sm font-medium hover:text-primary transition-colors">
+              World Indices
+            </Link>
             <Link href="/stocks" className="text-sm font-medium hover:text-primary transition-colors">
-              All Stocks
+              Quotes
             </Link>
-            <Link href="/historical" className="text-sm font-medium hover:text-primary transition-colors">
+            {/* <Link href="/historical" className="text-sm font-medium hover:text-primary transition-colors">
               Historical
-            </Link>
+            </Link> */}
             <ThemeToggle />
           </nav>
         </div>

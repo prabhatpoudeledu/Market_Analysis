@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { getSectorPerformance } from "@/lib/fmp-api"
 import { normalizeSectorName } from "@/lib/sector-stocks"
 import { SectorHeatMap } from "@/components/sector-heat-map"
-import { FinvizMap } from "@/components/finviz-map"
+import { TradingViewHeatmap } from "@/components/tradingview-heatmap"
 import { MarketIndices } from "@/components/market-indices"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -39,16 +39,20 @@ async function MarketData() {
         <MarketIndices />
       </section>
 
-      <section>
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-2">Sector Performance</h2>
-          <p className="text-muted-foreground">Click on a sector to view detailed stock performance</p>
+      {/* Sector Performance - Full width */}
+      <section className="space-y-8">
+        <div>
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold mb-2">Sector Performance</h2>
+            <p className="text-muted-foreground">Click on a sector to view detailed stock performance</p>
+          </div>
+          <SectorHeatMap sectors={sectors} />
         </div>
-        <SectorHeatMap sectors={sectors} />
-      </section>
 
-      <section className="mt-8">
-        <FinvizMap />
+        {/* TradingView Heatmap */}
+        <div>
+          <TradingViewHeatmap />
+        </div>
       </section>
     </>
   )
@@ -61,18 +65,13 @@ function MarketDataSkeleton() {
         <MarketIndices />
       </section>
 
-      <section>
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-2">Sector Performance</h2>
-          <p className="text-muted-foreground">Loading sector data...</p>
-        </div>
-        <Skeleton className="w-full h-[400px] rounded-lg" />
-      </section>
-
-      <section className="mt-8">
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-2">Market Map</h2>
-          <p className="text-muted-foreground">Loading market data...</p>
+      <section className="space-y-8">
+        <div>
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold mb-2">Sector Performance</h2>
+            <p className="text-muted-foreground">Loading sector data...</p>
+          </div>
+          <Skeleton className="w-full h-[400px] rounded-lg" />
         </div>
         <Skeleton className="w-full h-[600px] rounded-lg" />
       </section>
