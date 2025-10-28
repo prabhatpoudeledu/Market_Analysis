@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTheme } from "next-themes"
 import { MostActiveStocks } from "@/components/most-active-stocks"
-import { MarketNews } from "@/components/market-news"
 import { Maximize2, Minimize2 } from "lucide-react"
 
 export default function WorldIndicesPage() {
@@ -86,35 +85,19 @@ export default function WorldIndicesPage() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="relative">
-              <div className="absolute top-4 right-4 z-10">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setExpandedSection("gainers")}
-                  className="gap-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                >
-                  <Maximize2 className="h-4 w-4" />
-                  Expand
-                </Button>
-              </div>
-              <MostActiveStocks />
+          <div className="relative">
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setExpandedSection("gainers")}
+                className="gap-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+              >
+                <Maximize2 className="h-4 w-4" />
+                Expand
+              </Button>
             </div>
-            <div className="relative">
-              <div className="absolute top-4 right-4 z-10">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setExpandedSection("news")}
-                  className="gap-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                >
-                  <Maximize2 className="h-4 w-4" />
-                  Expand
-                </Button>
-              </div>
-              <MarketNews />
-            </div>
+            <MostActiveStocks />
           </div>
         </div>
       </main>
@@ -153,24 +136,6 @@ export default function WorldIndicesPage() {
           </DialogHeader>
           <div className="flex-1 mt-4">
             <MostActiveStocks height={typeof window !== "undefined" ? window.innerHeight - 150 : 800} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Market News Expanded */}
-      <Dialog open={expandedSection === "news"} onOpenChange={() => setExpandedSection(null)}>
-        <DialogContent className="max-w-[100vw] h-[100vh] p-6">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl">Market News</DialogTitle>
-              <Button variant="ghost" size="sm" onClick={() => setExpandedSection(null)} className="gap-2">
-                <Minimize2 className="h-4 w-4" />
-                Close
-              </Button>
-            </div>
-          </DialogHeader>
-          <div className="flex-1 mt-4">
-            <MarketNews height={typeof window !== "undefined" ? window.innerHeight - 150 : 800} />
           </div>
         </DialogContent>
       </Dialog>

@@ -24,6 +24,9 @@ export function Header() {
             <Link href="/world-indices" className="text-sm font-medium hover:text-primary transition-colors">
               World Indices
             </Link>
+            <Link href="/news" className="text-sm font-medium hover:text-primary transition-colors">
+              News
+            </Link>
             <Link href="/stocks" className="text-sm font-medium hover:text-primary transition-colors">
               Quotes
             </Link>
