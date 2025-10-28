@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@ai-sdk/xai':
-        specifier: latest
+        specifier: 2.0.28
         version: 2.0.28(zod@3.25.76)
       '@hookform/resolvers':
         specifier: ^3.10.0
@@ -99,7 +99,7 @@ importers:
         specifier: latest
         version: 1.5.0(next@15.5.4(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       ai:
-        specifier: latest
+        specifier: 5.0.81
         version: 5.0.81(zod@3.25.76)
       autoprefixer:
         specifier: ^10.4.20

@@ -1,56 +1,126 @@
-import { generateText } from "ai"
-import { xai } from "@ai-sdk/xai"
 import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const apiKey = process.env.FINNHUB_API_KEY
-    const grokApiKey = process.env.GROK_XAI_API_KEY
+    // Fetch Google News RSS feed for business/finance
+    const rssUrl = "https://news.google.com/rss/search?q=stock+market+OR+finance+OR+economy&hl=en-US&gl=US&ceid=US:en"
 
-    console.log("[v0] Grok API key present:", !!grokApiKey)
-    console.log("[v0] Grok API key length:", grokApiKey?.length || 0)
+    const response = await fetch(rssUrl)
+    if (!response.ok) {
+      throw new Error("Failed to fetch Google News")
+    }
 
-    if (!grokApiKey) {
-      console.error("[v0] Grok API key is missing")
-      return NextResponse.json({
-        sentiment: "Market sentiment analysis unavailable. Please configure Grok API key.",
-        newsCount: 0,
-        timestamp: new Date().toISOString(),
+    const xmlText = await response.text()
+
+    // Parse RSS XML to extract headlines
+    const headlines: string[] = []
+    const titleMatches = xmlText.matchAll(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g)
+
+    for (const match of titleMatches) {
+      if (match[1] && match[1] !== "Google News") {
+        headlines.push(match[1])
+        if (headlines.length >= 15) break
+      }
+    }
+
+    // Basic sentiment analysis using keyword matching
+    const positiveWords = [
+      "surge",
+      "gain",
+      "rally",
+      "rise",
+      "jump",
+      "soar",
+      "climb",
+      "advance",
+      "boost",
+      "growth",
+      "profit",
+      "strong",
+      "bullish",
+      "optimistic",
+      "record",
+      "high",
+      "up",
+      "positive",
+      "beat",
+      "exceed",
+      "outperform",
+      "recovery",
+      "rebound",
+    ]
+
+    const negativeWords = [
+      "fall",
+      "drop",
+      "plunge",
+      "decline",
+      "crash",
+      "tumble",
+      "sink",
+      "loss",
+      "weak",
+      "bearish",
+      "pessimistic",
+      "low",
+      "down",
+      "negative",
+      "miss",
+      "underperform",
+      "concern",
+      "worry",
+      "fear",
+      "risk",
+      "threat",
+      "warning",
+      "slump",
+      "recession",
+    ]
+
+    let positiveCount = 0
+    let negativeCount = 0
+
+    headlines.forEach((headline) => {
+      const lowerHeadline = headline.toLowerCase()
+      positiveWords.forEach((word) => {
+        if (lowerHeadline.includes(word)) positiveCount++
       })
-    }
-
-    // Get general market news
-    const newsRes = await fetch(`https://finnhub.io/api/v1/news?category=general&token=${apiKey}`)
-
-    if (!newsRes.ok) {
-      throw new Error("Failed to fetch news")
-    }
-
-    const news = await newsRes.json()
-    const recentNews = news.slice(0, 10)
-
-    // Prepare news summary for AI analysis
-    const newsSummary = recentNews.map((item: any) => `${item.headline}: ${item.summary || ""}`).join("\n\n")
-
-    console.log("[v0] About to call Grok AI with model grok-2-latest")
-
-    const { text } = await generateText({
-      model: xai("grok-2-latest", {
-        apiKey: process.env.GROK_XAI_API_KEY,
-      }),
-      prompt: `Analyze the sentiment of these recent market news headlines and provide a brief market sentiment summary (2-3 sentences) with an overall sentiment score (bullish/neutral/bearish):\n\n${newsSummary}`,
-      system: "You are a financial analyst AI. Provide concise, professional market sentiment analysis.",
+      negativeWords.forEach((word) => {
+        if (lowerHeadline.includes(word)) negativeCount++
+      })
     })
 
-    console.log("[v0] Grok AI response received")
+    // Determine overall sentiment
+    let sentimentLabel = "Neutral"
+    let sentimentDescription = "Market sentiment appears balanced with mixed signals."
+
+    const totalSentiment = positiveCount + negativeCount
+    if (totalSentiment > 0) {
+      const positiveRatio = positiveCount / totalSentiment
+
+      if (positiveRatio > 0.6) {
+        sentimentLabel = "Bullish"
+        sentimentDescription = `Market sentiment is positive with ${positiveCount} bullish indicators across recent news. Investors appear optimistic about market conditions.`
+      } else if (positiveRatio < 0.4) {
+        sentimentLabel = "Bearish"
+        sentimentDescription = `Market sentiment is cautious with ${negativeCount} bearish indicators in recent headlines. Investors showing concern about market direction.`
+      } else {
+        sentimentDescription = `Market sentiment is mixed with ${positiveCount} positive and ${negativeCount} negative signals. Investors remain cautious but watchful.`
+      }
+    }
 
     return NextResponse.json({
-      sentiment: text,
-      newsCount: recentNews.length,
+      sentiment: `${sentimentLabel}: ${sentimentDescription}`,
+      newsCount: headlines.length,
       timestamp: new Date().toISOString(),
+      details: {
+        positiveSignals: positiveCount,
+        negativeSignals: negativeCount,
+        headlines: headlines.slice(0, 5), // Return top 5 headlines
+      },
     })
   } catch (error) {
-    console.error("[v0] Error analyzing news sentiment:", error)
+    console.error("Error analyzing news sentiment:", error)
     return NextResponse.json({
       sentiment: "Unable to analyze market sentiment at this time. Please try again later.",
       newsCount: 0,
