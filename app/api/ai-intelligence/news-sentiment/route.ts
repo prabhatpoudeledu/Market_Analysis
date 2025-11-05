@@ -2,15 +2,21 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
+    console.log("[v0] News sentiment API called")
+
     // Fetch Google News RSS feed for business/finance
     const rssUrl = "https://news.google.com/rss/search?q=stock+market+OR+finance+OR+economy&hl=en-US&gl=US&ceid=US:en"
 
+    console.log("[v0] Fetching news from:", rssUrl)
     const response = await fetch(rssUrl)
+
     if (!response.ok) {
+      console.error("[v0] Failed to fetch Google News, status:", response.status)
       throw new Error("Failed to fetch Google News")
     }
 
     const xmlText = await response.text()
+    console.log("[v0] Received RSS feed, length:", xmlText.length)
 
     // Parse RSS XML to extract headlines
     const headlines: string[] = []

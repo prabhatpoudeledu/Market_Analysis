@@ -27,6 +27,9 @@ export function Header() {
             <Link href="/news" className="text-sm font-medium hover:text-primary transition-colors">
               News
             </Link>
+            <Link href="/ai-intelligence" className="text-sm font-medium hover:text-primary transition-colors">
+              AI Intelligence
+            </Link>
             <Link href="/stocks" className="text-sm font-medium hover:text-primary transition-colors">
               Quotes
             </Link>

@@ -4,7 +4,6 @@ import { normalizeSectorName } from "@/lib/sector-stocks"
 import { SectorHeatMap } from "@/components/sector-heat-map"
 import { TradingViewHeatmap } from "@/components/tradingview-heatmap"
 import { MarketIndices } from "@/components/market-indices"
-import { AIMarketIntelligence } from "@/components/ai-market-intelligence"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -40,11 +39,6 @@ async function MarketData() {
         <MarketIndices />
       </section>
 
-      {/* AI Market Intelligence */}
-      <section>
-        <AIMarketIntelligence />
-      </section>
-
       {/* Sector Performance - Full width */}
       <section className="space-y-8">
         <div>
@@ -69,11 +63,6 @@ function MarketDataSkeleton() {
     <>
       <section>
         <MarketIndices />
-      </section>
-
-      {/* Skeleton for AI Intelligence */}
-      <section>
-        <Skeleton className="w-full h-[300px] rounded-lg" />
       </section>
 
       <section className="space-y-8">
