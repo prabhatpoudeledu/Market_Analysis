@@ -15,7 +15,6 @@ export async function GET() {
         try {
           const quoteRes = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`)
           const quote = await quoteRes.json()
-          console.log(`[v0] ${symbol} quote:`, quote)
 
           // Get company profile for name
           const profileRes = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${apiKey}`)
@@ -24,7 +23,7 @@ export async function GET() {
           return {
             symbol,
             name: profile.name || symbol,
-            volume: quote.v || 0,
+            volume: Math.abs(quote.dp || 0) * 100, // Use price change percentage as a proxy for activity
             change: quote.dp || 0,
             price: quote.c || 0,
           }
@@ -36,8 +35,8 @@ export async function GET() {
     )
 
     const filtered = volumeSpikes
-      .filter((stock): stock is NonNullable<typeof stock> => stock !== null && stock.volume > 0)
-      .sort((a, b) => b.volume - a.volume)
+      .filter((stock): stock is NonNullable<typeof stock> => stock !== null)
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change)) // Sort by biggest price change
       .slice(0, 5)
 
     console.log("[v0] Filtered volume spikes:", filtered)

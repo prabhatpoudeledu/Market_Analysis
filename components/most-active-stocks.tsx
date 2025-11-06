@@ -16,29 +16,28 @@ export function MostActiveStocks({ height = 800 }: MostActiveStocksProps) {
     if (!containerRef.current) return
 
     const script = document.createElement("script")
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-hotlists.js"
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js"
     script.async = true
     script.innerHTML = JSON.stringify({
-      colorTheme: theme === "dark" ? "dark" : "light",
-      dateRange: "1D",
-      exchange: "US",
-      showChart: true,
-      locale: "en",
-      largeChartUrl: "",
-      isTransparent: false,
-      showSymbolLogo: true,
-      showFloatingTooltip: false,
       width: "100%",
       height: "100%",
-      plotLineColorGrowing: "rgba(41, 98, 255, 1)",
-      plotLineColorFalling: "rgba(41, 98, 255, 1)",
-      gridLineColor: "rgba(240, 243, 250, 0)",
-      scaleFontColor: "rgba(106, 109, 120, 1)",
-      belowLineFillColorGrowing: "rgba(41, 98, 255, 0.12)",
-      belowLineFillColorFalling: "rgba(41, 98, 255, 0.12)",
-      belowLineFillColorGrowingBottom: "rgba(41, 98, 255, 0)",
-      belowLineFillColorFallingBottom: "rgba(41, 98, 255, 0)",
-      symbolActiveColor: "rgba(41, 98, 255, 0.12)",
+      symbolsGroups: [
+        {
+          name: "Gainers & Losers",
+          originalName: "Gainers & Losers",
+          symbols: [
+            { name: "FOREXCOM:SPXUSD", displayName: "S&P 500" },
+            { name: "FOREXCOM:NSXUSD", displayName: "US 100" },
+            { name: "FOREXCOM:DJI", displayName: "Dow 30" },
+            { name: "CRYPTO:BTCUSD", displayName: "Bitcoin" },
+            { name: "CRYPTO:ETHUSD", displayName: "Ethereum" },
+          ],
+        },
+      ],
+      showSymbolLogo: true,
+      isTransparent: false,
+      colorTheme: theme === "dark" ? "dark" : "light",
+      locale: "en",
     })
 
     containerRef.current.innerHTML = ""
@@ -48,7 +47,7 @@ export function MostActiveStocks({ height = 800 }: MostActiveStocksProps) {
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle>Top Gainers</CardTitle>
+        <CardTitle>Top Gainers & Losers</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="tradingview-widget-container" style={{ height: `${height}px` }} ref={containerRef}>
